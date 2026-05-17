@@ -16,6 +16,7 @@ Cloná esto en cualquier proyecto nuevo y tenés todo listo en 30 segundos.
 └── settings.json    → permisos base y MCP habilitados
 .mcp.json            → configuración del plugin code-review-graph
 setup.sh             → script de instalación automática
+memory/              → reglas de comportamiento persistentes para Claude
 ```
 
 ---
@@ -95,6 +96,44 @@ Skills instalados desde [claude-code-templates](https://aitmpl.com). Cada skill 
 | `ui-ux-pro-max` | Paletas de color, tipografía, UX guidelines, stacks react+shadcn, design system validator | `frontend-react` (obligatorio en cambios de UI) |
 | `senior-architect` | Architecture patterns, system design workflows, tech decision guide + architecture_diagram_generator, dependency_analyzer | `backend-django`, `devops-aws`, `database`, `ai-fraud` |
 
+### Skills GSAP — animaciones web
+
+Skills especializados en GSAP (GreenSock Animation Platform) para proyectos frontend con animaciones avanzadas. Instalados en proyectos React/Vite.
+
+| Skill | Qué aporta |
+|---|---|
+| `gsap-core` | API base de GSAP: `gsap.to`, `gsap.from`, `gsap.fromTo`, easings, timelines básicas |
+| `gsap-timeline` | Timelines avanzadas, secuencias, `add()`, `labels`, control de reproducción |
+| `gsap-scrolltrigger` | ScrollTrigger: `scrub`, `pin`, `snap`, batch reveals, parallax en scroll |
+| `gsap-plugins` | Plugins: MorphSVG, SplitText, DrawSVG, Flip, MotionPath |
+| `gsap-react` | Patrones correctos en React: `gsap.context()`, `useGSAP()`, cleanup en `useEffect` |
+| `gsap-frameworks` | Integración con frameworks: Vite, Next.js, Nuxt, lazy loading de plugins |
+| `gsap-performance` | Optimización: `will-change`, `force3D`, `invalidateOnRefresh`, evitar reflows |
+| `gsap-utils` | Utilidades: `gsap.utils.toArray`, `mapRange`, `wrap`, `interpolate`, `selector` |
+
+**Cómo activar un skill GSAP en Claude Code:**
+
+```
+use skill gsap-scrolltrigger
+```
+
+O mencionalo en el contexto de la tarea:
+
+```
+implementá un parallax con ScrollTrigger usando gsap-scrolltrigger
+```
+
+**Regla clave en React:** siempre usar `gsap.context()` para limpiar animaciones al desmontar el componente:
+
+```tsx
+useEffect(() => {
+  const ctx = gsap.context(() => {
+    gsap.from(".mi-elemento", { opacity: 0, y: 30, duration: 0.6 });
+  }, ref);
+  return () => ctx.revert();
+}, []);
+```
+
 ### Reinstalar skills en un proyecto nuevo
 
 Si preferís instalarlos desde cero con la última versión:
@@ -168,6 +207,43 @@ pip install uv   # o brew install uv
 
 ---
 
+## Memoria persistente (`memory/`)
+
+La carpeta `memory/` contiene reglas de comportamiento que Claude lee en cada conversación y aplica sin que tengas que repetirlas. Son distintas al `CLAUDE.md` (que describe el proyecto) — estas describen **cómo debe comportarse Claude** en este repo.
+
+### Reglas incluidas
+
+| Archivo | Regla |
+|---|---|
+| `feedback_no_coauthor.md` | No agregar `Co-Authored-By: Claude` en los commits |
+
+### Cómo agregar una regla nueva
+
+Creá un archivo `.md` en `memory/` con este formato:
+
+```markdown
+---
+name: nombre-de-la-regla
+description: Una línea que resume cuándo aplica esta regla
+metadata:
+  type: feedback
+---
+
+La regla en sí, escrita claramente.
+
+**Why:** Por qué existe esta regla.
+
+**How to apply:** Cuándo y cómo aplicarla.
+```
+
+Claude lee automáticamente todos los archivos de `memory/` al inicio de cada sesión y los respeta durante toda la conversación.
+
+### Regla de no co-autoría (`feedback_no_coauthor.md`)
+
+**Siempre activa en este repo.** Claude no debe agregar la línea `Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>` en ningún commit. Los commits quedan solo con el autor humano.
+
+---
+
 ## Personalizar para tu proyecto
 
 Después de copiar la carpeta `.claude/`, editá:
@@ -177,6 +253,7 @@ Después de copiar la carpeta `.claude/`, editá:
 3. **`settings.json`** — agregá o quitá permisos de Bash según el proyecto.
 4. **Creá `.claude/settings.local.json`** con los MCP servers específicos del proyecto.
 5. **Creá `CLAUDE.md`** en la raíz con el contexto del proyecto (stack, módulos, convenciones).
+6. **Revisá `memory/`** — copiá las reglas que aplican a tu proyecto y eliminá las que no.
 
 ---
 
